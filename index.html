@@ -238,6 +238,24 @@
       fill: #ffffff;
     }
 
+    .rotor-pole-label {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 30px;
+      font-weight: 900;
+      paint-order: stroke;
+      stroke: #ffffff;
+      stroke-width: 5px;
+      stroke-linejoin: round;
+    }
+
+    .rotor-n {
+      fill: #1b6aa8;
+    }
+
+    .rotor-s {
+      fill: #c74f4f;
+    }
+
     .wire {
       fill: none;
       stroke-linecap: round;
@@ -357,17 +375,17 @@
             </desc>
 
             <defs>
-              <marker id="arrow-current" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                <path d="M 0 0 L 12 6 L 0 12 z" fill="#cc3b3b"></path>
+              <marker id="arrow-current" markerWidth="18" markerHeight="18" refX="16" refY="9" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 18 18">
+                <path d="M 0 0 L 18 9 L 0 18 z" fill="#cc3b3b"></path>
               </marker>
-              <marker id="arrow-field" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                <path d="M 0 0 L 12 6 L 0 12 z" fill="#2f7d52"></path>
+              <marker id="arrow-field" markerWidth="18" markerHeight="18" refX="16" refY="9" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 18 18">
+                <path d="M 0 0 L 18 9 L 0 18 z" fill="#2f7d52"></path>
               </marker>
-              <marker id="arrow-rotor-field" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
-                <path d="M 0 0 L 12 6 L 0 12 z" fill="#7a4fb1"></path>
+              <marker id="arrow-rotor-field" markerWidth="18" markerHeight="18" refX="16" refY="9" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 18 18">
+                <path d="M 0 0 L 18 9 L 0 18 z" fill="#7a4fb1"></path>
               </marker>
-              <marker id="arrow-torque" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto" markerUnits="strokeWidth">
-                <path d="M 0 0 L 14 7 L 0 14 z" fill="#7a4fb1"></path>
+              <marker id="arrow-torque" markerWidth="20" markerHeight="20" refX="18" refY="10" orient="auto" markerUnits="userSpaceOnUse" viewBox="0 0 20 20">
+                <path d="M 0 0 L 20 10 L 0 20 z" fill="#7a4fb1"></path>
               </marker>
             </defs>
 
@@ -446,15 +464,15 @@
                 <g id="rotor-field-normal">
                   <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 220 C625 235 640 385 500 400"></path>
                   <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 400 C375 385 360 235 500 220"></path>
-                  <text x="500" y="205" text-anchor="middle" class="pole-label" fill="#2f78b7">N</text>
-                  <text x="500" y="450" text-anchor="middle" class="pole-label" fill="#c74f4f">S</text>
+                  <text x="500" y="205" text-anchor="middle" class="rotor-pole-label rotor-n">N</text>
+                  <text x="500" y="450" text-anchor="middle" class="rotor-pole-label rotor-s">S</text>
                 </g>
 
                 <g id="rotor-field-reversed">
                   <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 400 C625 385 640 235 500 220"></path>
                   <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 220 C375 235 360 385 500 400"></path>
-                  <text x="500" y="205" text-anchor="middle" class="pole-label" fill="#c74f4f">S</text>
-                  <text x="500" y="450" text-anchor="middle" class="pole-label" fill="#2f78b7">N</text>
+                  <text x="500" y="205" text-anchor="middle" class="rotor-pole-label rotor-s">S</text>
+                  <text x="500" y="450" text-anchor="middle" class="rotor-pole-label rotor-n">N</text>
                 </g>
               </g>
 
@@ -675,6 +693,7 @@
         const length = line.getTotalLength();
         line.style.strokeDasharray = String(length);
         const lineProgress = clamp(opacity * 1.2 - index * 0.08, 0, 1);
+        line.style.opacity = String(lineProgress);
         line.style.strokeDashoffset = String(length * (1 - lineProgress));
       });
     }
@@ -721,6 +740,9 @@
       setFieldLineDrawing(elements.rotorFieldReversed, commutated ? rotorFieldOpacity : 0);
 
       setGroupOpacity(elements.torque, torqueOpacity);
+      elements.torque.querySelectorAll(".torque-arrow").forEach((arrow) => {
+        arrow.style.opacity = String(torqueOpacity);
+      });
       setGroupOpacity(elements.commutationNote, commutationOpacity);
       elements.commutator.classList.toggle("highlight", state.phaseIndex === 6);
 
