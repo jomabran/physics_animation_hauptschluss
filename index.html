@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hauptschlussmotor: Magnetfelder in der Frontalansicht</title>
+  <style>
+    :root {
+      --bg: #eef5f7;
+      --panel: #ffffff;
+      --ink: #17212b;
+      --muted: #607080;
+      --line: #cfdbe3;
+      --soft: #f6fafb;
+      --stator: #1b6aa8;
+      --rotor: #d36b2c;
+      --field: #2f7d52;
+      --current: #cc3b3b;
+      --metal: #9aa8b2;
+      --copper: #c67a25;
+      --shadow: 0 18px 44px rgba(29, 45, 59, 0.16);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    header {
+      width: min(1380px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 22px 0 12px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 4rem);
+      line-height: 1.02;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      max-width: 1000px;
+      margin: 0;
+      color: var(--muted);
+      font-size: clamp(1rem, 1.6vw, 1.18rem);
+      line-height: 1.55;
+    }
+
+    main {
+      width: min(1380px, calc(100% - 28px));
+      margin: 0 auto 28px;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.55fr);
+      gap: 16px;
+      align-items: start;
+    }
+
+    .stage,
+    .side-panel,
+    .memory-box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .stage {
+      overflow: hidden;
+    }
+
+    .svg-wrap {
+      background: #fbfdfe;
+      padding: 8px;
+    }
+
+    svg {
+      display: block;
+      width: 100%;
+      height: auto;
+      min-height: 520px;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      padding: 12px;
+      border-top: 1px solid var(--line);
+      background: #f8fbfc;
+    }
+
+    button,
+    .toggle {
+      border: 1px solid #aebdca;
+      border-radius: 7px;
+      background: #ffffff;
+      color: var(--ink);
+      min-height: 42px;
+      padding: 0 14px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover,
+    .toggle:hover {
+      background: #eef6fa;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+    }
+
+    .toggle input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--stator);
+    }
+
+    .speed-control {
+      display: grid;
+      grid-template-columns: auto minmax(160px, 240px) 48px;
+      gap: 10px;
+      align-items: center;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--stator);
+    }
+
+    .side-panel {
+      padding: 18px;
+    }
+
+    .phase-kicker {
+      color: var(--muted);
+      font-weight: 800;
+      text-transform: uppercase;
+      font-size: 0.86rem;
+      letter-spacing: 0.04em;
+      margin: 0 0 8px;
+    }
+
+    .phase-title {
+      margin: 0 0 12px;
+      font-size: clamp(1.5rem, 2.4vw, 2.2rem);
+      line-height: 1.08;
+    }
+
+    .phase-text {
+      margin: 0 0 16px;
+      color: var(--ink);
+      font-size: 1.12rem;
+      line-height: 1.55;
+    }
+
+    .fact-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .fact-list li {
+      padding: 10px 12px;
+      background: var(--soft);
+      border-left: 4px solid var(--stator);
+      border-radius: 5px;
+      color: var(--muted);
+      line-height: 1.42;
+    }
+
+    .memory-box {
+      margin-top: 16px;
+      padding: 16px 18px;
+      font-size: 1.05rem;
+      line-height: 1.55;
+    }
+
+    .memory-box h2 {
+      margin: 0 0 8px;
+      font-size: 1.24rem;
+    }
+
+    .memory-box p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .label,
+    .small-label,
+    .pole-label,
+    .hint-label {
+      font-family: Arial, Helvetica, sans-serif;
+      pointer-events: none;
+    }
+
+    .label {
+      font-size: 22px;
+      font-weight: 800;
+      fill: var(--ink);
+    }
+
+    .small-label {
+      font-size: 17px;
+      font-weight: 700;
+      fill: var(--muted);
+    }
+
+    .hint-label {
+      font-size: 15px;
+      font-weight: 700;
+      fill: #6b7a87;
+    }
+
+    .pole-label {
+      font-size: 34px;
+      font-weight: 900;
+      fill: #ffffff;
+    }
+
+    .wire {
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .stator-wire {
+      stroke: var(--stator);
+      stroke-width: 12;
+      opacity: 0.9;
+    }
+
+    .rotor-wire {
+      stroke: var(--rotor);
+      stroke-width: 12;
+      opacity: 0.92;
+    }
+
+    .current-arrow {
+      stroke: var(--current);
+      stroke-width: 7;
+      stroke-linecap: round;
+      fill: none;
+    }
+
+    .field-line {
+      fill: none;
+      stroke: var(--field);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      opacity: 0;
+    }
+
+    .rotor-field-line {
+      stroke: #7a4fb1;
+    }
+
+    .torque-arrow {
+      fill: none;
+      stroke: #7a4fb1;
+      stroke-width: 7;
+      stroke-linecap: round;
+      opacity: 0;
+    }
+
+    .hidden-by-toggle {
+      display: none;
+    }
+
+    .dimmed {
+      opacity: 0.22;
+    }
+
+    .highlight {
+      filter: drop-shadow(0 0 10px rgba(211, 107, 44, 0.85));
+    }
+
+    .commutator-flash {
+      opacity: 0;
+    }
+
+    @media (max-width: 980px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .side-panel {
+        order: 2;
+      }
+
+      svg {
+        min-height: 460px;
+      }
+    }
+
+    @media (max-width: 620px) {
+      header,
+      main {
+        width: min(100% - 18px, 1380px);
+      }
+
+      .controls {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .speed-control,
+      .toggle {
+        grid-column: 1 / -1;
+      }
+
+      button,
+      .toggle {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Magnetfelder im Hauptschlussmotor</h1>
+    <p class="subtitle">
+      Vereinfachte Frontalansicht zur Besprechung der Skizzenaufgabe: Statorspule und Rotorspule sind in Reihe geschaltet.
+      Die Animation zeigt schrittweise Strom, Magnetfeld, Drehmoment und Kommutierung.
+    </p>
+  </header>
+
+  <main>
+    <section class="layout" aria-label="Interaktive Animation Hauptschlussmotor">
+      <div class="stage">
+        <div class="svg-wrap">
+          <svg id="motor-svg" viewBox="0 0 1000 620" role="img" aria-labelledby="svg-title svg-desc">
+            <title id="svg-title">Vereinfachte Frontalansicht eines Hauptschlussmotors</title>
+            <desc id="svg-desc">
+              SVG-Modell mit Polschuhen, Statorspule, Rotorspule, Stromwender, Schleifkontakten, Strompfeilen und Feldlinien.
+            </desc>
+
+            <defs>
+              <marker id="arrow-current" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#cc3b3b"></path>
+              </marker>
+              <marker id="arrow-field" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#2f7d52"></path>
+              </marker>
+              <marker id="arrow-rotor-field" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 12 6 L 0 12 z" fill="#7a4fb1"></path>
+              </marker>
+              <marker id="arrow-torque" markerWidth="14" markerHeight="14" refX="11" refY="7" orient="auto" markerUnits="strokeWidth">
+                <path d="M 0 0 L 14 7 L 0 14 z" fill="#7a4fb1"></path>
+              </marker>
+            </defs>
+
+            <rect x="12" y="12" width="976" height="596" rx="18" fill="#ffffff" stroke="#d9e4eb"></rect>
+
+            <!-- Statoraufbau: Polschuhe und Joch als ruhende Motorteile. -->
+            <g id="motor-base">
+              <path d="M145 125 H270 V175 H215 V445 H270 V495 H145 Q115 495 115 465 V155 Q115 125 145 125Z" fill="#cfd8df" stroke="#7d8b96" stroke-width="3"></path>
+              <path d="M855 125 H730 V175 H785 V445 H730 V495 H855 Q885 495 885 465 V155 Q885 125 855 125Z" fill="#cfd8df" stroke="#7d8b96" stroke-width="3"></path>
+              <rect x="205" y="210" width="92" height="200" rx="16" fill="#2f78b7" stroke="#1a5687" stroke-width="4"></rect>
+              <rect x="703" y="210" width="92" height="200" rx="16" fill="#c74f4f" stroke="#8f3030" stroke-width="4"></rect>
+              <text x="251" y="326" text-anchor="middle" class="pole-label">N</text>
+              <text x="749" y="326" text-anchor="middle" class="pole-label">S</text>
+              <text x="135" y="548" class="small-label labels">Polschuhe</text>
+              <text x="733" y="548" class="small-label labels">Polschuhe</text>
+            </g>
+
+            <!-- Statorwicklung, didaktisch als umlaufende Spule um die Polschuhe gezeichnet. -->
+            <g id="stator-current-group">
+              <path class="wire stator-wire" d="M92 180 C55 180 55 250 92 250 C135 250 135 180 92 180"></path>
+              <path class="wire stator-wire" d="M92 262 C55 262 55 332 92 332 C135 332 135 262 92 262"></path>
+              <path class="wire stator-wire" d="M92 344 C55 344 55 414 92 414 C135 414 135 344 92 344"></path>
+              <path class="wire stator-wire" d="M908 180 C945 180 945 250 908 250 C865 250 865 180 908 180"></path>
+              <path class="wire stator-wire" d="M908 262 C945 262 945 332 908 332 C865 332 865 262 908 262"></path>
+              <path class="wire stator-wire" d="M908 344 C945 344 945 414 908 414 C865 414 865 344 908 344"></path>
+              <path class="current-arrow" marker-end="url(#arrow-current)" d="M70 205 C55 225 72 245 96 245"></path>
+              <path class="current-arrow" marker-end="url(#arrow-current)" d="M930 395 C945 375 928 350 904 350"></path>
+              <text x="66" y="153" class="small-label labels">Statorspule</text>
+              <text x="800" y="153" class="small-label labels">Statorspule</text>
+            </g>
+
+            <!-- Vereinfachtes Statorfeld: nahezu horizontal vom Nordpol zum Südpol. -->
+            <g id="stator-field-group">
+              <path class="field-line stator-field-line" marker-end="url(#arrow-field)" d="M308 240 C405 205 595 205 692 240"></path>
+              <path class="field-line stator-field-line" marker-end="url(#arrow-field)" d="M304 285 C410 266 590 266 696 285"></path>
+              <path class="field-line stator-field-line" marker-end="url(#arrow-field)" d="M304 332 C410 354 590 354 696 332"></path>
+              <path class="field-line stator-field-line" marker-end="url(#arrow-field)" d="M308 382 C405 420 595 420 692 382"></path>
+              <text x="350" y="196" class="hint-label labels">vereinfachtes Statorfeld</text>
+            </g>
+
+            <!-- Schleifkontakte sind im Raum fest, der Stromwender dreht mit dem Rotor. -->
+            <g id="brush-group">
+              <rect x="392" y="292" width="58" height="22" rx="8" fill="#8f9ba5" stroke="#5f6b75" stroke-width="3"></rect>
+              <rect x="550" y="292" width="58" height="22" rx="8" fill="#8f9ba5" stroke="#5f6b75" stroke-width="3"></rect>
+              <text x="360" y="282" class="small-label labels">Schleifkontakte</text>
+            </g>
+
+            <g id="rotor-assembly">
+              <!-- Rotor und Stromwender rotieren gemeinsam um die Achse. -->
+              <g id="rotor-rotating">
+                <ellipse cx="500" cy="310" rx="135" ry="92" fill="#f7f0e8" stroke="#9c8a7d" stroke-width="4"></ellipse>
+                <path class="wire rotor-wire" d="M430 250 H570 V370 H430 Z"></path>
+                <circle cx="500" cy="310" r="19" fill="#f2f5f7" stroke="#6f7d88" stroke-width="4"></circle>
+                <line x1="386" y1="310" x2="614" y2="310" stroke="#66727c" stroke-width="6" stroke-linecap="round"></line>
+                <line x1="500" y1="196" x2="500" y2="424" stroke="#66727c" stroke-width="5" stroke-linecap="round" opacity="0.55"></line>
+
+                <g id="commutator-group">
+                  <path d="M466 284 A48 48 0 0 1 534 284 L520 300 A28 28 0 0 0 480 300 Z" fill="#c67a25" stroke="#865117" stroke-width="3"></path>
+                  <path d="M534 336 A48 48 0 0 1 466 336 L480 320 A28 28 0 0 0 520 320 Z" fill="#c67a25" stroke="#865117" stroke-width="3"></path>
+                </g>
+
+                <g id="rotor-current-normal">
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M430 252 H538"></path>
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M570 252 V338"></path>
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M570 370 H462"></path>
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M430 370 V282"></path>
+                </g>
+
+                <g id="rotor-current-reversed">
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M570 252 H462"></path>
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M430 252 V338"></path>
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M430 370 H538"></path>
+                  <path class="current-arrow" marker-end="url(#arrow-current)" d="M570 370 V282"></path>
+                </g>
+
+                <g id="rotor-field-normal">
+                  <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 220 C625 235 640 385 500 400"></path>
+                  <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 400 C375 385 360 235 500 220"></path>
+                  <text x="500" y="205" text-anchor="middle" class="pole-label" fill="#2f78b7">N</text>
+                  <text x="500" y="450" text-anchor="middle" class="pole-label" fill="#c74f4f">S</text>
+                </g>
+
+                <g id="rotor-field-reversed">
+                  <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 400 C625 385 640 235 500 220"></path>
+                  <path class="field-line rotor-field-line" marker-end="url(#arrow-rotor-field)" d="M500 220 C375 235 360 385 500 400"></path>
+                  <text x="500" y="205" text-anchor="middle" class="pole-label" fill="#c74f4f">S</text>
+                  <text x="500" y="450" text-anchor="middle" class="pole-label" fill="#2f78b7">N</text>
+                </g>
+              </g>
+
+              <circle cx="500" cy="310" r="7" fill="#17212b"></circle>
+              <text x="515" y="305" class="small-label labels">Drehachse</text>
+            </g>
+
+            <g id="torque-group">
+              <path class="torque-arrow" marker-end="url(#arrow-torque)" d="M638 185 C760 245 760 390 640 444"></path>
+              <text x="704" y="318" class="small-label labels" fill="#7a4fb1">Drehmoment</text>
+            </g>
+
+            <g id="commutation-note">
+              <rect x="321" y="34" width="358" height="66" rx="14" fill="#fff2df" stroke="#d36b2c" stroke-width="3"></rect>
+              <text x="500" y="62" text-anchor="middle" class="small-label">Kommutierung nach 180°</text>
+              <text x="500" y="85" text-anchor="middle" class="hint-label">Rotorstrom wird umgekehrt, Rotorpole tauschen.</text>
+            </g>
+
+            <g id="series-circuit-label">
+              <path d="M108 478 C250 592 750 592 892 478" fill="none" stroke="#8896a2" stroke-width="4" stroke-dasharray="9 10"></path>
+              <text x="500" y="585" text-anchor="middle" class="small-label labels">Reihenschaltung: Statorspule und Rotorspule führen denselben Strom.</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="controls" aria-label="Animationssteuerung">
+          <button id="start-button" type="button">Start</button>
+          <button id="pause-button" type="button">Pause</button>
+          <button id="next-button" type="button">Schritt weiter</button>
+          <button id="back-button" type="button">Zurück</button>
+          <button id="reset-button" type="button">Reset</button>
+          <button id="slower-button" type="button">Langsamer</button>
+          <button id="faster-button" type="button">Schneller</button>
+
+          <label class="speed-control" for="speed-slider">
+            Animationsgeschwindigkeit
+            <input id="speed-slider" type="range" min="0.4" max="2.0" step="0.1" value="1">
+            <span id="speed-value">1,0x</span>
+          </label>
+
+          <label class="toggle">
+            <input id="toggle-fields" type="checkbox" checked>
+            Feldlinien anzeigen
+          </label>
+          <label class="toggle">
+            <input id="toggle-currents" type="checkbox" checked>
+            Strompfeile anzeigen
+          </label>
+          <label class="toggle">
+            <input id="toggle-labels" type="checkbox" checked>
+            Beschriftungen anzeigen
+          </label>
+        </div>
+      </div>
+
+      <aside class="side-panel" aria-live="polite">
+        <p class="phase-kicker" id="phase-kicker">Phase 1 von 8</p>
+        <h2 class="phase-title" id="phase-title">Vereinfachte Frontalansicht des Hauptschlussmotors</h2>
+        <p class="phase-text" id="phase-text">
+          Zuerst wird nur der Aufbau betrachtet: Polschuhe, Statorspule, Rotorspule, Drehachse, Stromwender und Schleifkontakte.
+        </p>
+        <ul class="fact-list">
+          <li>Die Feldlinien sind Modellbilder und nicht exakt berechnet.</li>
+          <li>Im Hauptschlussmotor sind Statorspule und Rotorspule in Reihe geschaltet.</li>
+          <li>Beim Umpolen der Stromquelle kehren sich beide Ströme gemeinsam um. Die Drehrichtung bleibt bei diesem Motortyp deshalb prinzipiell erhalten.</li>
+        </ul>
+      </aside>
+    </section>
+
+    <section class="memory-box" aria-label="Merkkasten">
+      <h2>Merkkasten</h2>
+      <p>
+        Die Darstellung ist ein vereinfachtes Modell. Reale Magnetfelder sind räumlich und komplexer. Statorspule und
+        Rotorspule erzeugen Magnetfelder. Der Stromwender kehrt den Rotorstrom nach einer halben Drehung um, sodass das
+        Drehmoment weiterhin in gleicher Richtung wirkt.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    /*
+      Ein-Datei-Animation ohne externe Bibliotheken.
+      Die Phasen beschreiben didaktische Schritte, nicht eine exakte Feldsimulation.
+    */
+
+    const phaseData = [
+      {
+        title: "Vereinfachte Frontalansicht des Hauptschlussmotors",
+        text: "Zuerst wird nur der Aufbau betrachtet: Polschuhe, Statorspule, Rotorspule, Drehachse, Stromwender und Schleifkontakte.",
+        duration: 5
+      },
+      {
+        title: "Die Statorspule wird zum Elektromagneten.",
+        text: "Der Strom durch die in Reihe liegende Statorwicklung wird eingeblendet. Die Statorspule erzeugt dadurch ein Magnetfeld.",
+        duration: 5
+      },
+      {
+        title: "Zwischen den Polschuhen bildet sich ein Magnetfeld aus.",
+        text: "Im Modell verlaufen die Feldlinien des Stators annähernd horizontal vom Nordpol zum Südpol.",
+        duration: 6
+      },
+      {
+        title: "Auch die Rotorspule wird zum Elektromagneten.",
+        text: "Da Statorspule und Rotorspule in Reihe geschaltet sind, fließt derselbe Strom auch durch die Rotorspule.",
+        duration: 5
+      },
+      {
+        title: "Das Rotorfeld wechselwirkt mit dem Statorfeld.",
+        text: "Die Rotorspule bildet einen Elektromagneten mit Nord- und Südpol. Dieses Rotorfeld steht im Feld der Polschuhe.",
+        duration: 6
+      },
+      {
+        title: "Die Magnetfelder üben Kräfte aus; daraus entsteht ein Drehmoment.",
+        text: "Der Rotor beginnt sich langsam zu drehen. Der Drehpfeil zeigt die gewählte Drehrichtung im Modell.",
+        duration: 8
+      },
+      {
+        title: "Der Stromwender kehrt die Stromrichtung in der Rotorspule um.",
+        text: "Nach ungefähr einer halben Drehung wird der Stromwender hervorgehoben. Die Strompfeile in der Rotorspule kehren sich um und die Rotorpole tauschen.",
+        duration: 7
+      },
+      {
+        title: "Durch die Umpolung wirkt das Drehmoment weiter in gleicher Drehrichtung.",
+        text: "Der Rotor dreht weiter. Die Kommutierung sorgt im Modell dafür, dass das Drehmoment nach jeder Halbdrehung weiter gleichgerichtet wirkt.",
+        duration: 8
+      }
+    ];
+
+    const elements = {
+      rotor: document.getElementById("rotor-rotating"),
+      statorCurrent: document.getElementById("stator-current-group"),
+      statorField: document.getElementById("stator-field-group"),
+      rotorCurrentNormal: document.getElementById("rotor-current-normal"),
+      rotorCurrentReversed: document.getElementById("rotor-current-reversed"),
+      rotorFieldNormal: document.getElementById("rotor-field-normal"),
+      rotorFieldReversed: document.getElementById("rotor-field-reversed"),
+      torque: document.getElementById("torque-group"),
+      commutator: document.getElementById("commutator-group"),
+      commutationNote: document.getElementById("commutation-note"),
+      fieldGroups: document.querySelectorAll("#stator-field-group, #rotor-field-normal, #rotor-field-reversed"),
+      currentGroups: document.querySelectorAll("#stator-current-group, #rotor-current-normal, #rotor-current-reversed"),
+      labels: document.querySelectorAll(".labels"),
+      phaseKicker: document.getElementById("phase-kicker"),
+      phaseTitle: document.getElementById("phase-title"),
+      phaseText: document.getElementById("phase-text"),
+      speedSlider: document.getElementById("speed-slider"),
+      speedValue: document.getElementById("speed-value"),
+      toggleFields: document.getElementById("toggle-fields"),
+      toggleCurrents: document.getElementById("toggle-currents"),
+      toggleLabels: document.getElementById("toggle-labels")
+    };
+
+    const state = {
+      phaseIndex: 0,
+      phaseTime: 0,
+      speed: 1,
+      isPlaying: false,
+      lastFrameTime: null
+    };
+
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function smoothStep(value) {
+      const x = clamp(value, 0, 1);
+      return x * x * (3 - 2 * x);
+    }
+
+    function phaseProgress() {
+      return clamp(state.phaseTime / phaseData[state.phaseIndex].duration, 0, 1);
+    }
+
+    function opacityForPhase(startPhase, progressScale = 1) {
+      if (state.phaseIndex < startPhase) {
+        return 0;
+      }
+      if (state.phaseIndex > startPhase) {
+        return 1;
+      }
+      return smoothStep(phaseProgress() * progressScale);
+    }
+
+    function rotationAngle() {
+      const progress = smoothStep(phaseProgress());
+
+      if (state.phaseIndex < 5) {
+        return 0;
+      }
+
+      if (state.phaseIndex === 5) {
+        return 150 * progress;
+      }
+
+      if (state.phaseIndex === 6) {
+        // Kurzes Abbremsen um 180 Grad, damit die Kommutierung besprochen werden kann.
+        return 150 + 30 * smoothStep(Math.min(progress * 1.7, 1));
+      }
+
+      if (state.phaseIndex === 7) {
+        return 180 + 180 * progress;
+      }
+
+      return 0;
+    }
+
+    function isCommutated() {
+      return state.phaseIndex >= 6;
+    }
+
+    function setGroupOpacity(group, value) {
+      group.style.opacity = String(clamp(value, 0, 1));
+    }
+
+    function setFieldLineDrawing(group, opacity) {
+      setGroupOpacity(group, opacity);
+      group.querySelectorAll(".field-line").forEach((line, index) => {
+        const length = line.getTotalLength();
+        line.style.strokeDasharray = String(length);
+        const lineProgress = clamp(opacity * 1.2 - index * 0.08, 0, 1);
+        line.style.strokeDashoffset = String(length * (1 - lineProgress));
+      });
+    }
+
+    function applyToggles() {
+      elements.fieldGroups.forEach((group) => {
+        group.classList.toggle("hidden-by-toggle", !elements.toggleFields.checked);
+      });
+
+      elements.currentGroups.forEach((group) => {
+        group.classList.toggle("hidden-by-toggle", !elements.toggleCurrents.checked);
+      });
+
+      elements.labels.forEach((label) => {
+        label.classList.toggle("hidden-by-toggle", !elements.toggleLabels.checked);
+      });
+    }
+
+    function updatePhaseText() {
+      const phase = phaseData[state.phaseIndex];
+      elements.phaseKicker.textContent = `Phase ${state.phaseIndex + 1} von ${phaseData.length}`;
+      elements.phaseTitle.textContent = phase.title;
+      elements.phaseText.textContent = phase.text;
+    }
+
+    function renderScene() {
+      const statorCurrentOpacity = opacityForPhase(1, 1.5);
+      const statorFieldOpacity = opacityForPhase(2, 1.2);
+      const rotorCurrentOpacity = opacityForPhase(3, 1.5);
+      const rotorFieldOpacity = opacityForPhase(4, 1.2);
+      const torqueOpacity = opacityForPhase(5, 1.3);
+      const commutationOpacity = opacityForPhase(6, 1.8);
+      const commutated = isCommutated();
+
+      elements.rotor.setAttribute("transform", `rotate(${rotationAngle()} 500 310)`);
+
+      setGroupOpacity(elements.statorCurrent, statorCurrentOpacity);
+      setFieldLineDrawing(elements.statorField, statorFieldOpacity);
+
+      setGroupOpacity(elements.rotorCurrentNormal, commutated ? 0 : rotorCurrentOpacity);
+      setGroupOpacity(elements.rotorCurrentReversed, commutated ? rotorCurrentOpacity : 0);
+
+      setFieldLineDrawing(elements.rotorFieldNormal, commutated ? 0 : rotorFieldOpacity);
+      setFieldLineDrawing(elements.rotorFieldReversed, commutated ? rotorFieldOpacity : 0);
+
+      setGroupOpacity(elements.torque, torqueOpacity);
+      setGroupOpacity(elements.commutationNote, commutationOpacity);
+      elements.commutator.classList.toggle("highlight", state.phaseIndex === 6);
+
+      applyToggles();
+      updatePhaseText();
+    }
+
+    function advancePhase() {
+      if (state.phaseIndex < phaseData.length - 1) {
+        state.phaseIndex += 1;
+        state.phaseTime = 0;
+      } else {
+        state.isPlaying = false;
+      }
+      renderScene();
+    }
+
+    function goBackPhase() {
+      if (state.phaseIndex > 0) {
+        state.phaseIndex -= 1;
+      }
+      state.phaseTime = 0;
+      renderScene();
+    }
+
+    function resetAnimation() {
+      state.phaseIndex = 0;
+      state.phaseTime = 0;
+      state.isPlaying = false;
+      state.lastFrameTime = null;
+      renderScene();
+    }
+
+    function animationLoop(timestamp) {
+      if (state.lastFrameTime === null) {
+        state.lastFrameTime = timestamp;
+      }
+
+      const elapsedSeconds = (timestamp - state.lastFrameTime) / 1000;
+      state.lastFrameTime = timestamp;
+
+      if (state.isPlaying) {
+        state.phaseTime += elapsedSeconds * state.speed;
+
+        while (state.phaseTime >= phaseData[state.phaseIndex].duration && state.isPlaying) {
+          state.phaseTime -= phaseData[state.phaseIndex].duration;
+          advancePhase();
+        }
+
+        renderScene();
+      }
+
+      requestAnimationFrame(animationLoop);
+    }
+
+    function setSpeed(value) {
+      state.speed = clamp(Number(value), 0.4, 2);
+      elements.speedSlider.value = String(state.speed);
+      elements.speedValue.textContent = `${state.speed.toFixed(1).replace(".", ",")}x`;
+    }
+
+    document.getElementById("start-button").addEventListener("click", () => {
+      state.isPlaying = true;
+      state.lastFrameTime = null;
+    });
+
+    document.getElementById("pause-button").addEventListener("click", () => {
+      state.isPlaying = false;
+    });
+
+    document.getElementById("next-button").addEventListener("click", () => {
+      state.isPlaying = false;
+      advancePhase();
+    });
+
+    document.getElementById("back-button").addEventListener("click", () => {
+      state.isPlaying = false;
+      goBackPhase();
+    });
+
+    document.getElementById("reset-button").addEventListener("click", resetAnimation);
+
+    document.getElementById("slower-button").addEventListener("click", () => {
+      setSpeed(state.speed - 0.2);
+    });
+
+    document.getElementById("faster-button").addEventListener("click", () => {
+      setSpeed(state.speed + 0.2);
+    });
+
+    elements.speedSlider.addEventListener("input", (event) => {
+      setSpeed(event.target.value);
+    });
+
+    [elements.toggleFields, elements.toggleCurrents, elements.toggleLabels].forEach((toggle) => {
+      toggle.addEventListener("change", applyToggles);
+    });
+
+    setSpeed(1);
+    renderScene();
+    requestAnimationFrame(animationLoop);
+  </script>
+</body>
+</html>
